@@ -1,25 +1,39 @@
-/* index.css */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
-
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: light dark;
-  background-color: #121212;
+.app-container {
+  text-align: center;
+  padding: 2rem;
+  font-family: sans-serif;
+}
+.form-container input,
+.form-container button {
+  margin: 0.5rem;
+  padding: 0.5rem;
+}
+.notes-list {
+  margin-top: 2rem;
+}
+.note {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin: 1rem auto;
+  max-width: 400px;
+}
+.note img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+}
+.button {
+  background-color: #0077b6;
   color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
 }
-
-body, html, #root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-* {
-  box-sizing: border-box;
+.delete-btn {
+  background-color: #e63946;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
 }
