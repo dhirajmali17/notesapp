@@ -10,7 +10,6 @@ import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } fr
 import { listNotes } from "./graphql/queries";
 
 Amplify.configure(outputs);
-
 const client = generateClient();
 
 function App() {
@@ -73,34 +72,124 @@ function App() {
   return (
     <Authenticator>
       {({ signOut }) => (
-        <main>
-          <h1>Notes App</h1>
-          <input
-            placeholder="Note name"
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            value={formData.name}
-          />
-          <textarea
-            placeholder="Note description"
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            value={formData.description}
-          />
-          <input
-            type="file"
-            onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
-          />
-          <button onClick={createNote}>Create Note</button>
-          <button onClick={signOut}>Sign Out</button>
-          <div>
-            {notes.map((note) => (
-              <div key={note.id} className="note">
-                <h2>{note.name}</h2>
-                <p>{note.description}</p>
-                {note.imageUrl && <img src={note.imageUrl} alt={note.name} width="200" />}
-                <button onClick={() => deleteNote(note.id)}>Delete</button>
-              </div>
-            ))}
-          </div>
+        <main
+          style={{
+            maxWidth: "800px",
+            margin: "2rem auto",
+            padding: "1.5rem",
+            backgroundColor: "#ffffff",
+            borderRadius: "10px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+            fontFamily: "Segoe UI, sans-serif",
+          }}
+        >
+          <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h1 style={{ margin: 0, color: "#1f2937" }}>📝 Notes App</h1>
+            <button
+              onClick={signOut}
+              style={{
+                backgroundColor: "#ef4444",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+                padding: "0.5rem 1rem",
+                cursor: "pointer",
+              }}
+            >
+              Sign Out
+            </button>
+          </header>
+
+          <section style={{ marginTop: "2rem" }}>
+            <h2 style={{ color: "#2563eb" }}>Create a Note</h2>
+            <input
+              placeholder="Note name"
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              value={formData.name}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                marginTop: "0.5rem",
+                marginBottom: "1rem",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <textarea
+              placeholder="Note description"
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              value={formData.description}
+              style={{
+                width: "100%",
+                padding: "0.5rem",
+                height: "100px",
+                marginBottom: "1rem",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <input
+              type="file"
+              onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+              style={{ marginBottom: "1rem" }}
+            />
+            <br />
+            <button
+              onClick={createNote}
+              style={{
+                backgroundColor: "#10b981",
+                color: "white",
+                padding: "0.6rem 1.2rem",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer",
+                marginBottom: "2rem",
+              }}
+            >
+              ➕ Create Note
+            </button>
+          </section>
+
+          <section>
+            <h2 style={{ color: "#2563eb" }}>Your Notes</h2>
+            {notes.length === 0 && <p>No notes yet!</p>}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1rem" }}>
+              {notes.map((note) => (
+                <div
+                  key={note.id}
+                  style={{
+                    padding: "1rem",
+                    backgroundColor: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <h3 style={{ margin: "0 0 0.5rem", color: "#111827" }}>{note.name}</h3>
+                  <p style={{ marginBottom: "0.5rem", color: "#4b5563" }}>{note.description}</p>
+                  {note.imageUrl && (
+                    <img
+                      src={note.imageUrl}
+                      alt={note.name}
+                      style={{ maxWidth: "100%", borderRadius: "5px", marginBottom: "0.5rem" }}
+                    />
+                  )}
+                  <button
+                    onClick={() => deleteNote(note.id)}
+                    style={{
+                      backgroundColor: "#ef4444",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      padding: "0.4rem 0.8rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
         </main>
       )}
     </Authenticator>
