@@ -1,39 +1,28 @@
-.app-container {
-  text-align: center;
-  padding: 2rem;
-  font-family: sans-serif;
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background-color: #ffffff;
+  color: #000000;
+  min-height: 100vh;
 }
-.form-container input,
-.form-container button {
-  margin: 0.5rem;
-  padding: 0.5rem;
+
+body {
+  margin: 0;
+  background-color: #ffffff;
+  color: #000000;
 }
-.notes-list {
-  margin-top: 2rem;
+
+input, button, select, textarea {
+  font-family: inherit;
+  font-size: 1rem;
 }
-.note {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  margin: 1rem auto;
-  max-width: 400px;
+
+a {
+  color: #007BFF;
+  text-decoration: none;
 }
-.note img {
-  width: 100%;
-  max-height: 200px;
-  object-fit: cover;
-}
-.button {
-  background-color: #0077b6;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  cursor: pointer;
-}
-.delete-btn {
-  background-color: #e63946;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  margin-top: 0.5rem;
-  cursor: pointer;
+
+a:hover {
+  text-decoration: underline;
 }

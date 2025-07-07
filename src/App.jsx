@@ -1,119 +1,109 @@
-import React, { useEffect, useState } from 'react';
-import './index.css';
-import { Amplify } from 'aws-amplify';
-import { Authenticator } from '@aws-amplify/ui-react';
-import '@aws-amplify/ui-react/styles.css';
+import { useEffect, useState } from "react";
+import { Amplify } from "aws-amplify";
+import {
+  Authenticator,
+  Heading,
+  Text,
+  View,
+  Button,
+  TextField,
+  Image,
+} from "@aws-amplify/ui-react";
+import "@aws-amplify/ui-react/styles.css";
 import outputs from "./amplify_outputs.json";
-import { generateClient } from 'aws-amplify/api';
-import { listNotes } from './graphql/queries';
-import { createNote, deleteNote } from './graphql/mutations';
-import { uploadData, getUrl } from 'aws-amplify/storage';
+import { generateClient } from "aws-amplify/data";
+import { getUrl, uploadData } from "aws-amplify/storage";
+import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from "./graphql/mutations";
+import { listNotes } from "./graphql/queries";
 
 Amplify.configure(outputs);
 const client = generateClient();
 
-export default function App() {
+function App() {
   const [notes, setNotes] = useState([]);
-  const [formData, setFormData] = useState({ name: '', description: '', image: null });
+  const [formData, setFormData] = useState({ name: "", description: "", image: null });
 
   useEffect(() => {
     fetchNotes();
   }, []);
 
   async function fetchNotes() {
-    const results = await client.graphql({ query: listNotes });
-    const items = results.data.listNotes.items;
-
-    const notesWithImageUrls = await Promise.all(
-      items.map(async (note) => {
+    const { data } = await client.graphql({ query: listNotes });
+    const notesList = data.listNotes.items;
+    const notesWithUrls = await Promise.all(
+      notesList.map(async (note) => {
         if (note.image) {
           const url = await getUrl({ key: note.image });
-          return { ...note, imageUrl: url.url };
+          return { ...note, imageUrl: url.url.toString() };
         }
         return note;
       })
     );
-
-    setNotes(notesWithImageUrls);
+    setNotes(notesWithUrls);
   }
 
-  async function handleCreateNote() {
+  async function createNote() {
     const { name, description, image } = formData;
-    if (!name || !description) return alert('Name and description required');
+    if (!name || !description) return;
 
-    let imageName = null;
-
+    let imageKey;
     if (image) {
-      imageName = `${Date.now()}-${image.name}`;
-      await uploadData({
-        key: imageName,
-        data: image,
-      }).result;
+      const { key } = await uploadData({ key: image.name, data: image });
+      imageKey = key;
     }
 
     await client.graphql({
-      query: createNote,
-      variables: {
-        input: {
-          name,
-          description,
-          image: imageName,
-        },
-      },
+      query: createNoteMutation,
+      variables: { input: { name, description, image: imageKey } },
     });
 
-    setFormData({ name: '', description: '', image: null });
+    setFormData({ name: "", description: "", image: null });
     fetchNotes();
   }
 
-  async function handleDeleteNote(id) {
-    await client.graphql({
-      query: deleteNote,
-      variables: { input: { id } },
-    });
+  async function deleteNote(id) {
+    await client.graphql({ query: deleteNoteMutation, variables: { input: { id } } });
     fetchNotes();
   }
 
   return (
     <Authenticator>
-      {({ signOut, user }) => (
-        <main className="app-container">
-          <h1>Welcome, {user?.username} 👋</h1>
-          <p>You are now signed in to your Notes App.</p>
-          <button className="button" onClick={signOut}>Sign out</button>
+      {({ signOut }) => (
+        <View padding="2rem" style={{ backgroundColor: "#fff", minHeight: "100vh", color: "#000" }}>
+          <Heading level={1}>Notes App</Heading>
 
-          <div className="form-container">
-            <input
-              type="text"
-              placeholder="Note name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <input
-              type="text"
-              placeholder="Note description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            />
-            <input
-              type="file"
-              onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
-            />
-            <button className="button" onClick={handleCreateNote}>Create Note</button>
-          </div>
+          <TextField
+            placeholder="Note name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <TextField
+            placeholder="Note description"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          />
+          <input
+            type="file"
+            onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+          />
+          <Button onClick={createNote} marginTop="1rem">Create Note</Button>
 
-          <div className="notes-list">
+          <View marginTop="2rem">
             {notes.map((note) => (
-              <div className="note" key={note.id}>
-                <h3>{note.name}</h3>
-                <p>{note.description}</p>
-                {note.imageUrl && <img src={note.imageUrl} alt={note.name} />}
-                <button className="delete-btn" onClick={() => handleDeleteNote(note.id)}>Delete</button>
-              </div>
+              <View key={note.id} style={{ borderBottom: "1px solid #ccc", padding: "1rem 0" }}>
+                <Heading level={3}>{note.name}</Heading>
+                <Text>{note.description}</Text>
+                {note.imageUrl && <Image src={note.imageUrl} alt={note.name} width="200px" />}
+                <Button onClick={() => deleteNote(note.id)} variation="destructive">Delete</Button>
+              </View>
             ))}
-          </div>
-        </main>
+          </View>
+
+          <Button onClick={signOut} variation="primary" marginTop="2rem">Sign Out</Button>
+        </View>
       )}
     </Authenticator>
   );
 }
+
+export default App;
