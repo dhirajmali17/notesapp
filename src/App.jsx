@@ -1,22 +1,16 @@
 import { useEffect, useState } from "react";
 import { Amplify } from "aws-amplify";
-import {
-  Authenticator,
-  Heading,
-  Text,
-  View,
-  Button,
-  TextField,
-  Image,
-} from "@aws-amplify/ui-react";
+import { Authenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
-import outputs from "./amplify_outputs.json";
+
+import outputs from "../amplify_outputs.json";
 import { generateClient } from "aws-amplify/data";
 import { getUrl, uploadData } from "aws-amplify/storage";
 import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from "./graphql/mutations";
 import { listNotes } from "./graphql/queries";
 
 Amplify.configure(outputs);
+
 const client = generateClient();
 
 function App() {
@@ -29,32 +23,39 @@ function App() {
 
   async function fetchNotes() {
     const { data } = await client.graphql({ query: listNotes });
-    const notesList = data.listNotes.items;
-    const notesWithUrls = await Promise.all(
-      notesList.map(async (note) => {
+    const notesList = await Promise.all(
+      data.listNotes.items.map(async (note) => {
         if (note.image) {
-          const url = await getUrl({ key: note.image });
-          return { ...note, imageUrl: url.url.toString() };
+          const { url } = await getUrl({ key: note.image });
+          note.imageUrl = url;
         }
         return note;
       })
     );
-    setNotes(notesWithUrls);
+    setNotes(notesList);
   }
 
   async function createNote() {
-    const { name, description, image } = formData;
-    if (!name || !description) return;
-
+    if (!formData.name || !formData.description) return;
     let imageKey;
-    if (image) {
-      const { key } = await uploadData({ key: image.name, data: image });
+
+    if (formData.image) {
+      const { key } = await uploadData({
+        data: formData.image,
+        path: `media/${formData.image.name}`,
+      }).result;
       imageKey = key;
     }
 
     await client.graphql({
       query: createNoteMutation,
-      variables: { input: { name, description, image: imageKey } },
+      variables: {
+        input: {
+          name: formData.name,
+          description: formData.description,
+          image: imageKey,
+        },
+      },
     });
 
     setFormData({ name: "", description: "", image: null });
@@ -62,45 +63,45 @@ function App() {
   }
 
   async function deleteNote(id) {
-    await client.graphql({ query: deleteNoteMutation, variables: { input: { id } } });
+    await client.graphql({
+      query: deleteNoteMutation,
+      variables: { input: { id } },
+    });
     fetchNotes();
   }
 
   return (
     <Authenticator>
       {({ signOut }) => (
-        <View padding="2rem" style={{ backgroundColor: "#fff", minHeight: "100vh", color: "#000" }}>
-          <Heading level={1}>Notes App</Heading>
-
-          <TextField
+        <main>
+          <h1>Notes App</h1>
+          <input
             placeholder="Note name"
-            value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={formData.name}
           />
-          <TextField
+          <textarea
             placeholder="Note description"
-            value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            value={formData.description}
           />
           <input
             type="file"
             onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
           />
-          <Button onClick={createNote} marginTop="1rem">Create Note</Button>
-
-          <View marginTop="2rem">
+          <button onClick={createNote}>Create Note</button>
+          <button onClick={signOut}>Sign Out</button>
+          <div>
             {notes.map((note) => (
-              <View key={note.id} style={{ borderBottom: "1px solid #ccc", padding: "1rem 0" }}>
-                <Heading level={3}>{note.name}</Heading>
-                <Text>{note.description}</Text>
-                {note.imageUrl && <Image src={note.imageUrl} alt={note.name} width="200px" />}
-                <Button onClick={() => deleteNote(note.id)} variation="destructive">Delete</Button>
-              </View>
+              <div key={note.id} className="note">
+                <h2>{note.name}</h2>
+                <p>{note.description}</p>
+                {note.imageUrl && <img src={note.imageUrl} alt={note.name} width="200" />}
+                <button onClick={() => deleteNote(note.id)}>Delete</button>
+              </div>
             ))}
-          </View>
-
-          <Button onClick={signOut} variation="primary" marginTop="2rem">Sign Out</Button>
-        </View>
+          </div>
+        </main>
       )}
     </Authenticator>
   );

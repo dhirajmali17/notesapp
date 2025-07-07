@@ -1,28 +1,28 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  font-weight: 400;
-  background-color: #ffffff;
-  color: #000000;
-  min-height: 100vh;
+  color-scheme: light;
+  color: #000;
+  background-color: #fff;
 }
 
 body {
   margin: 0;
+  padding: 2rem;
   background-color: #ffffff;
   color: #000000;
 }
 
-input, button, select, textarea {
-  font-family: inherit;
+input, textarea, button {
+  margin-top: 1rem;
+  padding: 10px;
   font-size: 1rem;
 }
 
-a {
-  color: #007BFF;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
+.note {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-top: 10px;
+  border-radius: 5px;
+  background: #f9f9f9;
 }
